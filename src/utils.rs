@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::time::{Duration, Instant};
 
+#[cfg(feature = "template")]
 use regex::{Captures, Regex};
 
 use console::{measure_text_width, Style};
@@ -77,6 +78,7 @@ impl Estimate {
     }
 }
 
+#[allow(dead_code)]
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub enum Alignment {
     Left,
@@ -109,6 +111,12 @@ impl<'a> TemplateVar<'a> {
     }
 }
 
+#[cfg(not(feature = "template"))]
+pub fn expand_template<F: Fn(&TemplateVar<'_>) -> String>(s: &str, _f: F) -> Cow<'_, str> {
+    Cow::Borrowed(s)
+}
+
+#[cfg(feature = "template")]
 pub fn expand_template<F: Fn(&TemplateVar<'_>) -> String>(s: &str, f: F) -> Cow<'_, str> {
     lazy_static::lazy_static! {
         static ref VAR_RE: Regex = Regex::new(r"(\}\})|\{(\{|[^}]+\})").unwrap();
